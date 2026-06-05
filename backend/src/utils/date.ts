@@ -67,3 +67,23 @@ export function getMonthDateRange(date: Date): { dateFrom: Date; dateTo: Date } 
 
   return { dateFrom, dateTo: currentDate };
 }
+
+export function getFiscalYear(date: Date): number {
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth() + 1; // 1-12
+  
+  // Fiscal year runs April 1st to March 31st
+  return month >= 4 ? year : year - 1;
+}
+
+export function getFiscalYearStart(year: number): Date {
+  return new Date(Date.UTC(year, 3, 1)); // April 1st
+}
+
+export function getFiscalYearEnd(year: number): Date {
+  return new Date(Date.UTC(year + 1, 2, 31)); // March 31st
+}
+
+export function isAprilFirst(date: Date): boolean {
+  return date.getUTCMonth() === 3 && date.getUTCDate() === 1;
+}

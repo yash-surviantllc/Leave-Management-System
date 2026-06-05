@@ -269,6 +269,8 @@ model LeaveBalance {
   accrued        Float     @default(0)
   used           Float     @default(0)
   pending        Float     @default(0)
+  carryForward   Float     @default(0)
+  lastResetDate  DateTime?
   available      Float     @default(0)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
