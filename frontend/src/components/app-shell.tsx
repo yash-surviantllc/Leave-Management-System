@@ -117,14 +117,7 @@ const navItems: NavItem[] = [
     section: "Time",
     permissions: ["attendance:read"]
   },
-  {
-    label: "Shift Settings",
-    icon: Settings,
-    href: "/shifts",
-    section: "Time",
-    permissions: ["attendance:manage"]
-  },
-  {
+    {
     label: "Holidays",
     icon: CalendarCheck,
     href: "/holidays",
@@ -511,11 +504,10 @@ export function AppShell({ user, token, children }: AppShellProps) {
                 <Menu size={18} aria-hidden="true" />
               </button>
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-slate-950">
-                  <span className="sm:hidden">LMS</span>
-                  <span className="hidden sm:inline">Company Workspace</span>
+                <p className="hidden break-all text-sm font-bold text-slate-950 sm:block sm:truncate">
+                  {primaryRole ? roleLabels[primaryRole] : "User"} | {user.email}
                 </p>
-                <p className="hidden break-all text-xs text-slate-500 sm:block sm:truncate">
+                <p className="break-all text-sm font-bold text-slate-950 sm:hidden sm:truncate">
                   {primaryRole ? roleLabels[primaryRole] : "User"} | {user.email}
                 </p>
               </div>

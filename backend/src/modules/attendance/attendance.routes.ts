@@ -40,8 +40,7 @@ const attendanceInclude = {
       department: true,
       designation: true
     }
-  },
-  shift: true
+  }
 } satisfies Prisma.AttendanceInclude;
 
 const timeSchema = z
@@ -102,15 +101,6 @@ const attendanceReportQuerySchema = z.object({
   status: z.nativeEnum(AttendanceStatus).optional()
 }).merge(paginationQuerySchema);
 
-const shiftBodySchema = z.object({
-  name: z.string().trim().min(2).max(100),
-  startTime: timeSchema,
-  endTime: timeSchema,
-  lateAfterMinutes: z.number().int().min(0).max(240),
-  halfDayAfterMinutes: z.number().int().min(60).max(720),
-  isDefault: z.boolean(),
-  isActive: z.boolean()
-});
 
 const holidayBodySchema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -214,26 +204,18 @@ async function getEmployeeForAuth(req: Request) {
   return employee;
 }
 
-async function getDefaultShift() {
-  const shift = await prisma.shift.findFirst({
-    where: {
-      isActive: true
-    },
-    orderBy: [
-      {
-        isDefault: "desc"
-      },
-      {
-        createdAt: "asc"
-      }
-    ]
-  });
-
-  if (!shift) {
-    throw new AppError(400, "SHIFT_NOT_CONFIGURED", "Create an active shift before recording attendance");
-  }
-
-  return shift;
+function getDefaultShift() {
+  // Hardcoded default shift: 9:00 AM - 5:00 PM
+  return {
+    id: "default-shift",
+    name: "Default Shift",
+    startTime: "09:00",
+    endTime: "17:00",
+    lateAfterMinutes: 15,
+    halfDayAfterMinutes: 240,
+    isDefault: true,
+    isActive: true
+  };
 }
 
 function handlePrismaMutationError(error: unknown): never {
@@ -258,7 +240,7 @@ attendanceRouter.post(
   asyncHandler(async (req, res) => {
     const body = parseInput(clockInSchema, req.body);
     const employee = await getEmployeeForAuth(req);
-    const shift = await getDefaultShift();
+    const shift = getDefaultShift();
     const now = new Date();
     const today = toDateOnlyFromDate(now);
 
@@ -285,14 +267,12 @@ attendanceRouter.post(
         },
         update: {
           clockInAt: now,
-          shiftId: shift.id,
           workMode: body.workMode,
           status: computeClockInStatus(now, shift, body.workMode),
           notes: body.notes
         },
         create: {
           employeeId: employee.id,
-          shiftId: shift.id,
           date: today,
           clockInAt: now,
           workMode: body.workMode,
@@ -323,9 +303,6 @@ attendanceRouter.post(
           employeeId: employee.id,
           date: today
         }
-      },
-      include: {
-        shift: true
       }
     });
 
@@ -337,7 +314,8 @@ attendanceRouter.post(
       throw new AppError(409, "ALREADY_CLOCKED_OUT", "Attendance is already clocked out for today");
     }
 
-    const halfDayAfterMinutes = attendance.shift?.halfDayAfterMinutes ?? 240;
+    const defaultShift = getDefaultShift();
+    const halfDayAfterMinutes = defaultShift.halfDayAfterMinutes;
 
     const updatedAttendance = await prisma.attendance.update({
       where: {
@@ -492,55 +470,6 @@ attendanceRouter.get(
   })
 );
 
-attendanceRouter.get(
-  "/shifts",
-  requireAnyPermission(["attendance:manage", "attendance:read", "attendance:write"]),
-  asyncHandler(async (_req, res) => {
-    const shifts = await prisma.shift.findMany({
-      orderBy: [
-        {
-          isDefault: "desc"
-        },
-        {
-          createdAt: "asc"
-        }
-      ]
-    });
-
-    res.status(200).json(ok({ shifts }, { total: shifts.length }));
-  })
-);
-
-attendanceRouter.post(
-  "/shifts",
-  requirePermissions(["attendance:manage"]),
-  asyncHandler(async (req, res) => {
-    const body = parseInput(shiftBodySchema, req.body);
-
-    try {
-      const shift = await prisma.$transaction(async (transaction) => {
-        if (body.isDefault) {
-          await transaction.shift.updateMany({
-            where: {
-              isDefault: true
-            },
-            data: {
-              isDefault: false
-            }
-          });
-        }
-
-        return transaction.shift.create({
-          data: body
-        });
-      });
-
-      res.status(201).json(ok({ shift }));
-    } catch (error) {
-      handlePrismaMutationError(error);
-    }
-  })
-);
 
 attendanceRouter.get(
   "/holidays",
