@@ -145,6 +145,14 @@ function getDateYear(date: Date): number {
   return date.getUTCFullYear();
 }
 
+function getFiscalYear(date: Date): number {
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth() + 1; // 1-12
+  
+  // Fiscal year runs April 1st to March 31st
+  return month >= 4 ? year : year - 1;
+}
+
 function addDays(date: Date, days: number): Date {
   const nextDate = new Date(date);
   nextDate.setUTCDate(nextDate.getUTCDate() + days);
@@ -215,6 +223,25 @@ function calculateAvailableBalance(balance: {
   pending: number;
 }): number {
   return balance.openingBalance + balance.accrued - balance.used - balance.pending;
+}
+
+function calculateEffectiveBalance(balance: {
+  openingBalance: number;
+  accrued: number;
+  carryForward: number;
+  used: number;
+  pending: number;
+}): number {
+  return balance.openingBalance + balance.accrued + balance.carryForward - balance.used - balance.pending;
+}
+
+function calculateCarryForward(previousYearBalance: {
+  openingBalance: number;
+  accrued: number;
+  used: number;
+  pending: number;
+}): number {
+  return Math.max(0, previousYearBalance.openingBalance + previousYearBalance.accrued - previousYearBalance.used - previousYearBalance.pending);
 }
 
 async function getOrCreateLeaveBalance(input: {
@@ -395,8 +422,8 @@ leaveRouter.post(
       throw new AppError(400, "INVALID_HALF_DAY_RANGE", "Half-day leave must use the same start and end date");
     }
 
-    if (getDateYear(startDate) !== getDateYear(endDate)) {
-      throw new AppError(400, "INVALID_LEAVE_YEAR", "Leave requests must stay within one calendar year");
+    if (getFiscalYear(startDate) !== getFiscalYear(endDate)) {
+      throw new AppError(400, "INVALID_LEAVE_YEAR", "Leave requests must stay within one fiscal year");
     }
 
     const totalDays = await calculateLeaveDays({
@@ -415,14 +442,16 @@ leaveRouter.post(
           transaction,
           employeeId: employee.id,
           leaveTypeId: leaveType.id,
-          year: getDateYear(startDate),
+          year: getFiscalYear(startDate),
           openingBalance: leaveType.defaultAnnualAllowance
         });
         const requestIsApproved = !leaveType.requiresApproval;
         const nextPending = requestIsApproved ? balance.pending : balance.pending + totalDays;
         const nextUsed = requestIsApproved ? balance.used + totalDays : balance.used;
-        const nextAvailable = calculateAvailableBalance({
-          ...balance,
+        const nextAvailable = calculateEffectiveBalance({
+          openingBalance: balance.openingBalance,
+          accrued: balance.accrued,
+          carryForward: balance.carryForward || 0,
           pending: nextPending,
           used: nextUsed
         });

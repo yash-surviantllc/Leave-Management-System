@@ -5,6 +5,7 @@ import { getAllowedCorsOrigins } from "./config/cors";
 import { getDatabaseTarget } from "./lib/database-status";
 import { prisma } from "./lib/prisma";
 import { initializeRealtime } from "./lib/realtime";
+import { initializeLeaveResetScheduler } from "./scheduler/leave-reset-scheduler";
 
 const app = createApp();
 const httpServer = createServer(app);
@@ -14,6 +15,7 @@ httpServer.headersTimeout = 66_000;
 httpServer.requestTimeout = 120_000;
 
 initializeRealtime(httpServer);
+initializeLeaveResetScheduler();
 
 const server = httpServer.listen(env.PORT, () => {
   const databaseTarget = getDatabaseTarget(env.DATABASE_URL);
