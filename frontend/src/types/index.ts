@@ -113,18 +113,6 @@ export type Employee = {
   updatedAt: string;
 };
 
-export type Shift = {
-  id: string;
-  name: string;
-  startTime: string;
-  endTime: string;
-  lateAfterMinutes: number;
-  halfDayAfterMinutes: number;
-  isDefault: boolean;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-};
 
 export type Holiday = {
   id: string;
@@ -150,8 +138,6 @@ export type AttendanceRecord = {
   id: string;
   employeeId: string;
   employee: AttendanceEmployee;
-  shiftId: string | null;
-  shift: Shift | null;
   date: string;
   clockInAt: string | null;
   clockOutAt: string | null;

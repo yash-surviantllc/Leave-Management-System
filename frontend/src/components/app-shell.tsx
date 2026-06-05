@@ -117,14 +117,7 @@ const navItems: NavItem[] = [
     section: "Time",
     permissions: ["attendance:read"]
   },
-  {
-    label: "Shift Settings",
-    icon: Settings,
-    href: "/shifts",
-    section: "Time",
-    permissions: ["attendance:manage"]
-  },
-  {
+    {
     label: "Holidays",
     icon: CalendarCheck,
     href: "/holidays",

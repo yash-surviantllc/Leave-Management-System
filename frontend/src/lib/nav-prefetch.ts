@@ -15,8 +15,7 @@ import {
   listLeaveRequests,
   listLeaveTypes,
   listMyLeaves,
-  listNotifications,
-  listShifts
+  listNotifications
 } from "@/lib/api";
 import { getMonthStartInputValue, getTodayInputValue } from "@/lib/time-format";
 
@@ -122,11 +121,7 @@ export function prefetchNavData(
     return;
   }
 
-  if (href === "/shifts") {
-    prefetchQuery(queryClient, ["shifts", token], () => listShifts(token));
-    return;
-  }
-
+  
   if (href === "/holidays") {
     prefetchQuery(queryClient, ["holidays", token, year], () =>
       listHolidays(token, year)
