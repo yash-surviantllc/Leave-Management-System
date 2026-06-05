@@ -1,0 +1,366 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String               @id @default(uuid())
+  email               String               @unique
+  name                String
+  passwordHash        String?
+  status              AccountStatus        @default(ACTIVE)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  employee_documents  employee_documents[]
+  employee            Employee?
+  notifications       Notification[]
+  passwordResetTokens PasswordResetToken[]
+  roles               UserRole[]
+
+  @@map("users")
+}
+
+model Role {
+  id          String           @id @default(uuid())
+  name        String           @unique
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  permissions RolePermission[]
+  users       UserRole[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String           @id @default(uuid())
+  key         String           @unique
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  roles       RolePermission[]
+
+  @@map("permissions")
+}
+
+model UserRole {
+  userId String
+  roleId String
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  tokenHash String    @unique
+  userId    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+model Department {
+  id           String        @id @default(uuid())
+  name         String        @unique
+  description  String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  designations Designation[]
+  employees    Employee[]
+
+  @@map("departments")
+}
+
+model Designation {
+  id           String      @id @default(uuid())
+  title        String
+  description  String?
+  departmentId String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  department   Department? @relation(fields: [departmentId], references: [id])
+  employees    Employee[]
+
+  @@unique([title, departmentId])
+  @@index([departmentId])
+  @@map("designations")
+}
+
+model Employee {
+  id                 String               @id @default(uuid())
+  employeeCode       String               @unique
+  userId             String?              @unique
+  firstName          String
+  lastName           String
+  workEmail          String               @unique
+  personalEmail      String?
+  phone              String?
+  dateOfBirth        DateTime?
+  dateOfJoining      DateTime
+  dateOfExit         DateTime?
+  status             EmploymentStatus     @default(ACTIVE)
+  location           String?
+  departmentId       String?
+  designationId      String?
+  managerId          String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  attendanceRecords  Attendance[]
+  emergencyContacts  EmergencyContact[]
+  employee_documents employee_documents[]
+  department         Department?          @relation(fields: [departmentId], references: [id])
+  designation        Designation?         @relation(fields: [designationId], references: [id])
+  manager            Employee?            @relation("EmployeeManager", fields: [managerId], references: [id])
+  reports            Employee[]           @relation("EmployeeManager")
+  user               User?                @relation(fields: [userId], references: [id])
+  leaveBalances      LeaveBalance[]
+  leaveRequests      LeaveRequest[]       @relation("EmployeeLeaveRequests")
+  reviewedLeaves     LeaveRequest[]       @relation("ReviewedLeaveRequests")
+
+  @@index([departmentId])
+  @@index([designationId])
+  @@index([managerId])
+  @@index([status, createdAt])
+  @@index([departmentId, status])
+  @@index([dateOfJoining])
+  @@map("employees")
+}
+
+model EmergencyContact {
+  id           String   @id @default(uuid())
+  employeeId   String
+  name         String
+  relationship String
+  phone        String
+  email        String?
+  isPrimary    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  employee     Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId])
+  @@map("emergency_contacts")
+}
+
+model Shift {
+  id                  String       @id @default(uuid())
+  name                String       @unique
+  startTime           String
+  endTime             String
+  lateAfterMinutes    Int          @default(15)
+  halfDayAfterMinutes Int          @default(240)
+  isDefault           Boolean      @default(false)
+  isActive            Boolean      @default(true)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  attendanceRecords   Attendance[]
+
+  @@map("shifts")
+}
+
+model Holiday {
+  id          String      @id @default(uuid())
+  name        String
+  date        DateTime    @unique @db.Date
+  type        HolidayType @default(PUBLIC)
+  description String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("holidays")
+}
+
+model Attendance {
+  id         String             @id @default(uuid())
+  employeeId String
+  shiftId    String?
+  date       DateTime           @db.Date
+  clockInAt  DateTime?
+  clockOutAt DateTime?
+  status     AttendanceStatus   @default(PRESENT)
+  workMode   AttendanceWorkMode @default(OFFICE)
+  notes      String?
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+  employee   Employee           @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  shift      Shift?             @relation(fields: [shiftId], references: [id])
+
+  @@unique([employeeId, date])
+  @@index([employeeId])
+  @@index([shiftId])
+  @@index([date])
+  @@index([date, status])
+  @@map("attendance")
+}
+
+model LeaveType {
+  id                     String         @id @default(uuid())
+  name                   String         @unique
+  description            String?
+  defaultAnnualAllowance Float          @default(0)
+  isPaid                 Boolean        @default(true)
+  requiresApproval       Boolean        @default(true)
+  isActive               Boolean        @default(true)
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+  leaveBalances          LeaveBalance[]
+  leaveRequests          LeaveRequest[]
+
+  @@map("leave_types")
+}
+
+model LeaveRequest {
+  id           String             @id @default(uuid())
+  employeeId   String
+  leaveTypeId  String
+  startDate    DateTime           @db.Date
+  endDate      DateTime           @db.Date
+  dayType      LeaveDayType       @default(FULL_DAY)
+  totalDays    Float
+  reason       String
+  status       LeaveRequestStatus @default(PENDING)
+  reviewerId   String?
+  reviewedAt   DateTime?
+  decisionNote String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  employee     Employee           @relation("EmployeeLeaveRequests", fields: [employeeId], references: [id], onDelete: Cascade)
+  leaveType    LeaveType          @relation(fields: [leaveTypeId], references: [id])
+  reviewer     Employee?          @relation("ReviewedLeaveRequests", fields: [reviewerId], references: [id])
+
+  @@index([employeeId])
+  @@index([leaveTypeId])
+  @@index([reviewerId])
+  @@index([startDate])
+  @@index([status])
+  @@index([employeeId, createdAt])
+  @@index([status, createdAt])
+  @@index([startDate, endDate])
+  @@map("leave_requests")
+}
+
+model LeaveBalance {
+  id             String    @id @default(uuid())
+  employeeId     String
+  leaveTypeId    String
+  year           Int
+  openingBalance Float     @default(0)
+  accrued        Float     @default(0)
+  used           Float     @default(0)
+  pending        Float     @default(0)
+  available      Float     @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  employee       Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  leaveType      LeaveType @relation(fields: [leaveTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, leaveTypeId, year])
+  @@index([employeeId])
+  @@index([leaveTypeId])
+  @@index([year])
+  @@index([employeeId, year])
+  @@map("leave_balances")
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  category  String
+  isRead    Boolean   @default(false)
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([userId, createdAt])
+  @@index([userId, isRead])
+  @@index([userId, category, createdAt])
+  @@map("notifications")
+}
+
+model employee_documents {
+  id           String   @id
+  employeeId   String
+  documentType String
+  fileName     String
+  fileUrl      String
+  mimeType     String?
+  sizeBytes    Int?
+  notes        String?
+  uploadedById String?
+  createdAt    DateTime @default(now())
+  employees    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  users        User?    @relation(fields: [uploadedById], references: [id])
+
+  @@index([employeeId])
+  @@index([uploadedById])
+}
+
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+  TERMINATED
+}
+
+enum EmploymentStatus {
+  ONBOARDING
+  ACTIVE
+  PROBATION
+  INACTIVE
+  TERMINATED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  HALF_DAY
+  ABSENT
+  WORK_FROM_HOME
+}
+
+enum AttendanceWorkMode {
+  OFFICE
+  WORK_FROM_HOME
+}
+
+enum HolidayType {
+  PUBLIC
+  COMPANY
+  OPTIONAL
+}
+
+enum LeaveRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum LeaveDayType {
+  FULL_DAY
+  HALF_DAY
+}

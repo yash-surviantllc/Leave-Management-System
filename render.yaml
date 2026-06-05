@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: lms-backend
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci && npm run prisma:generate --workspace backend && npm run build --workspace backend
+    preDeployCommand: npm run prisma:migrate:deploy --workspace backend
+    startCommand: npm run start --workspace backend
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: CORS_ORIGIN
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
