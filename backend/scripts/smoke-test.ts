@@ -62,7 +62,7 @@ const adminPassword = process.env.SMOKE_ADMIN_PASSWORD ?? "Admin@12345";
 const smokeEmployeeEmail = "phase10.employee@lms.local";
 const smokeEmployeePassword = "Employee@12345";
 const smokeEmployeeCode = "SMOKE-EMP-001";
-const smokeLeaveTypeName = "Smoke Unpaid Leave";
+const smokeLeaveTypeName = "Smoke Casual Leave";
 
 function assert(condition: boolean, message: string): asserts condition {
   if (!condition) {

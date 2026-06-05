@@ -98,24 +98,24 @@ const designations = [
 
 const leaveTypes = [
   {
-    name: "Annual Leave",
-    description: "Paid planned leave for vacation and personal time",
-    defaultAnnualAllowance: 18,
+    name: "Casual Leave",
+    description: "Paid casual leave for personal needs and short-term requirements",
+    defaultAnnualAllowance: 12,
     isPaid: true,
     requiresApproval: true
   },
   {
     name: "Sick Leave",
-    description: "Paid leave for illness or medical care",
-    defaultAnnualAllowance: 10,
+    description: "Paid leave for illness and medical care",
+    defaultAnnualAllowance: 8,
     isPaid: true,
     requiresApproval: true
   },
   {
-    name: "Unpaid Leave",
-    description: "Unpaid leave for exceptional cases",
-    defaultAnnualAllowance: 0,
-    isPaid: false,
+    name: "Earned Leave",
+    description: "Paid earned leave based on tenure and performance",
+    defaultAnnualAllowance: 15,
+    isPaid: true,
     requiresApproval: true
   }
 ];
