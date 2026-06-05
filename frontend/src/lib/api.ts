@@ -7,7 +7,6 @@ import type {
   DashboardSummary,
   Designation,
   Employee,
-  EmployeeDocument,
   EmployeeReport,
   EmploymentStatus,
   Holiday,
@@ -19,8 +18,7 @@ import type {
   LeaveRequest,
   LeaveRequestStatus,
   LeaveType,
-  NotificationRecord,
-  Shift
+  NotificationRecord
 } from "@/types";
 
 const localApiUrl = "http://localhost:5000/api";
@@ -272,15 +270,6 @@ export type AttendanceFilters = {
   status?: AttendanceStatus | "";
 } & PaginationInput;
 
-export type ShiftInput = {
-  name: string;
-  startTime: string;
-  endTime: string;
-  lateAfterMinutes: number;
-  halfDayAfterMinutes: number;
-  isDefault: boolean;
-  isActive: boolean;
-};
 
 export type HolidayInput = {
   name: string;
@@ -650,20 +639,6 @@ export function getAttendanceReport(token: string, filters: AttendanceFilters) {
   );
 }
 
-export function listShifts(token: string) {
-  return request<{ shifts: Shift[] }>("/shifts", {
-    method: "GET",
-    token
-  });
-}
-
-export function createShift(token: string, input: ShiftInput) {
-  return request<{ shift: Shift }>("/shifts", {
-    method: "POST",
-    body: input,
-    token
-  });
-}
 
 export function listHolidays(token: string, year: number) {
   return request<{ holidays: Holiday[] }>(`/holidays?year=${year}`, {
