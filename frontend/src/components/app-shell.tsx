@@ -340,10 +340,10 @@ export function AppShell({ user, token, children }: AppShellProps) {
       const active = item.href
         ? activePathname === item.href || activePathname.startsWith(`${item.href}/`)
         : false;
-      const className = `flex min-h-10 w-full min-w-0 items-center gap-3 rounded-md border px-3 text-sm transition ${
+      const className = `flex min-h-10 w-full min-w-0 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
         active
-          ? "border-slate-200 bg-white font-semibold text-slate-950 shadow-[0_8px_20px_rgba(15,23,42,0.06)]"
-          : "border-transparent text-slate-600 hover:border-slate-200 hover:bg-white"
+          ? "bg-slate-900 text-white shadow-soft"
+          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
       }`;
 
       const href = item.href;
@@ -384,8 +384,8 @@ export function AppShell({ user, token, children }: AppShellProps) {
   function renderNavSections() {
     return visibleNavSections.map((section) => {
       return (
-        <div className="space-y-1.5" key={section.label}>
-          <p className="px-3 text-xs font-medium text-slate-400">{section.label}</p>
+        <div className="space-y-2" key={section.label}>
+          <p className="px-3 text-xs font-bold uppercase tracking-wider text-slate-400">{section.label}</p>
           <div className="space-y-1">{renderNavItems(section.items)}</div>
         </div>
       );
@@ -393,11 +393,11 @@ export function AppShell({ user, token, children }: AppShellProps) {
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#f4f6f8] text-slate-950">
-      <aside className="fixed inset-y-3 left-3 hidden w-[232px] flex-col overflow-hidden rounded-lg border border-slate-200 bg-[#f8fafc] shadow-[0_18px_45px_rgba(15,23,42,0.08)] lg:flex">
+    <main className="min-h-screen overflow-x-hidden bg-slate-50 text-slate-950">
+      <aside className="fixed inset-y-4 left-4 hidden w-[240px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card lg:flex">
         <Link
           href="/dashboard"
-          className="m-2 flex h-12 min-w-0 items-center gap-3 rounded-lg bg-[#020617] px-3 text-white transition hover:bg-[#111827]"
+          className="m-3 flex h-14 min-w-0 items-center gap-3 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 px-4 text-white shadow-soft transition hover:shadow-hover"
           prefetch={false}
           onFocus={() => prefetchRoute("/dashboard")}
           onPointerDown={() => prefetchRoute("/dashboard")}
@@ -408,23 +408,23 @@ export function AppShell({ user, token, children }: AppShellProps) {
           }}
           aria-label="Go to dashboard"
         >
-          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-[#ffffff] text-[#020617]">
-            <LayoutDashboard size={19} aria-hidden="true" />
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white text-slate-900">
+            <LayoutDashboard size={20} aria-hidden="true" />
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold">LMS</p>
-            <p className="truncate text-xs text-white/60">Organization</p>
+            <p className="truncate text-sm font-bold">LMS</p>
+            <p className="truncate text-xs text-white/70">Organization</p>
           </div>
         </Link>
 
-        <nav ref={desktopNavRef} className="flex-1 space-y-5 overflow-y-auto px-2 pb-4 pt-2">
+        <nav ref={desktopNavRef} className="flex-1 space-y-6 overflow-y-auto px-3 pb-4 pt-2">
           {renderNavSections()}
         </nav>
 
-        <div className="border-t border-slate-200 p-3">
+        <div className="border-t border-slate-100 p-3">
           <Link
             href="/profile"
-            className="flex min-w-0 items-center gap-3 rounded-md px-2 py-2 transition hover:bg-white"
+            className="flex min-w-0 items-center gap-3 rounded-lg px-3 py-2.5 transition hover:bg-slate-50"
             prefetch={false}
             onFocus={() => prefetchRoute("/profile")}
             onPointerDown={() => prefetchRoute("/profile")}
@@ -434,11 +434,11 @@ export function AppShell({ user, token, children }: AppShellProps) {
               setPendingHref("/profile");
             }}
           >
-            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-white text-slate-700 shadow-[0_8px_20px_rgba(15,23,42,0.06)]">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-slate-100 text-slate-700">
               <UserCircle size={20} aria-hidden="true" />
             </div>
             <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-slate-900">{user.name}</p>
+              <p className="truncate text-sm font-bold text-slate-900">{user.name}</p>
               <p className="truncate text-xs text-slate-500">{user.email}</p>
             </div>
           </Link>
@@ -491,12 +491,12 @@ export function AppShell({ user, token, children }: AppShellProps) {
         </div>
       ) : null}
 
-      <section className="min-w-0 lg:pl-[252px]">
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-[#f4f6f8]/92 px-3 py-2 backdrop-blur sm:px-5 sm:py-3">
-          <div className="flex min-h-12 items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-2 py-2 shadow-[0_8px_26px_rgba(15,23,42,0.04)] sm:gap-3 sm:px-4">
-            <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+      <section className="min-w-0 lg:pl-[264px]">
+        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/80 px-4 py-3 backdrop-blur-md sm:px-6 sm:py-4">
+          <div className="flex min-h-12 items-center justify-between gap-3 sm:gap-4">
+            <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
               <button
-                className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-slate-200 text-slate-600 lg:hidden"
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 lg:hidden"
                 type="button"
                 onClick={() => setIsMobileNavOpen(true)}
                 aria-label="Open navigation"
@@ -504,19 +504,22 @@ export function AppShell({ user, token, children }: AppShellProps) {
                 <Menu size={18} aria-hidden="true" />
               </button>
               <div className="min-w-0">
-                <p className="hidden break-all text-sm font-bold text-slate-950 sm:block sm:truncate">
-                  {primaryRole ? roleLabels[primaryRole] : "User"} | {user.email}
+                <p className="hidden break-all text-sm font-bold text-slate-900 sm:block sm:truncate">
+                  {primaryRole ? roleLabels[primaryRole] : "User"}
                 </p>
-                <p className="break-all text-sm font-bold text-slate-950 sm:hidden sm:truncate">
-                  {primaryRole ? roleLabels[primaryRole] : "User"} | {user.email}
+                <p className="hidden break-all text-xs text-slate-500 sm:block sm:truncate">
+                  {user.email}
+                </p>
+                <p className="break-all text-sm font-bold text-slate-900 sm:hidden sm:truncate">
+                  {primaryRole ? roleLabels[primaryRole] : "User"}
                 </p>
               </div>
             </div>
 
-            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+            <div className="flex shrink-0 items-center gap-2">
               <Link
                 href="/notifications"
-                className="relative grid h-10 w-10 shrink-0 place-items-center rounded-md border border-slate-200 bg-white text-slate-600 shadow-sm transition-transform hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 sm:h-9 sm:w-9"
+                className="relative grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900"
                 aria-label={
                   hasUnreadNotifications
                     ? `${unreadNotificationCount} unread notifications`
@@ -545,7 +548,7 @@ export function AppShell({ user, token, children }: AppShellProps) {
                 </span>
               </Link>
               <button
-                className="inline-flex h-10 w-10 shrink-0 items-center justify-center gap-1 rounded-md border border-slate-200 bg-white px-0 text-sm font-semibold text-slate-700 shadow-sm transition-transform hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-60 sm:h-9 sm:w-auto sm:px-3"
+                className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 sm:px-4"
                 type="button"
                 aria-label="Sign out"
                 onClick={signOut}
@@ -558,7 +561,7 @@ export function AppShell({ user, token, children }: AppShellProps) {
           </div>
         </header>
 
-        <div className="mx-auto w-full max-w-7xl px-3 pb-6 pt-3 sm:px-5">
+        <div className="mx-auto w-full max-w-7xl px-4 pb-8 pt-6 sm:px-6">
           {children}
         </div>
       </section>
